@@ -1,0 +1,17 @@
+/.installed.cfg
+/.mr.developer.cfg
+/include
+/lib
+/bin
+/build
+/develop-eggs
+/dist
+/eggs
+/parts
+*.egg-info
+*.mo
+*.pyc
+*~
+*.bak
+*.swp
+*.pt.py

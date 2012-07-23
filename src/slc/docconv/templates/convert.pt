@@ -1,0 +1,13 @@
+<html>
+  <head>
+    <title>File Upload</title>
+  </head>
+  <body>
+    <h3>File Upload</h3>
+    <form action="http://localhost:6310/docconv/@@convert-external" 
+          method="post" enctype="multipart/form-data">
+      <input type="file" name="filedata" size="40">
+      <button type="submit" name="submit" value="submit">Submit</button>
+    </form>
+  </body>
+</html>
