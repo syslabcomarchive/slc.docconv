@@ -1,6 +1,6 @@
 import shutil
 from five import grok
-from os import path, listdir, walk
+from os import path, listdir, walk, remove
 from zipfile import ZipFile
 from Products.CMFPlone.interfaces import IPloneSiteRoot
 from collective.documentviewer.settings import GlobalSettings
@@ -19,6 +19,8 @@ class ConvertExternal(grok.View):
         filedata = self.request.get('filedata')
         if not filedata:
             return 'No filedata found'
+        if not docsplit:
+            return 'docsplit not found, check that docsplit is installed'
         filename_base = '.'.join(filedata.filename.split('.')[:-1])
         storage_dir = path.join(self.gsettings.storage_location, filename_base)
         filename_dump = path.join(self.gsettings.storage_location, filedata.filename)
@@ -26,6 +28,8 @@ class ConvertExternal(grok.View):
 
         if not path.exists(storage_dir):
             mkdir_p(storage_dir)
+        if path.exists(filename_dump):
+            remove(filename_dump)
         fi = open(filename_dump, 'wb')
         fi.write(filedata.read())
         fi.close()
