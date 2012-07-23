@@ -67,6 +67,9 @@ class ConvertExternal(grok.View):
         zipped.close()
         zipfd = open(filename_zip, 'r')
         zipdata = zipfd.read()
+        zipfd.close()
+        remove(filename_zip)
+        shutil.rmtree(storage_dir)
 
         R = self.request.RESPONSE
         R.setHeader('content-type', 'application/zip')
