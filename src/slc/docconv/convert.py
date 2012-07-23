@@ -34,6 +34,8 @@ class ConvertExternal(grok.View):
         fi.write(filedata.read())
         fi.close()
 
+        if path.exists(path.join(storage_dir, DUMP_FILENAME)):
+            remove(path.join(storage_dir, DUMP_FILENAME))
         docsplit.convert_to_pdf(filename_dump, filedata.filename, storage_dir)
         shutil.move(path.join(storage_dir, DUMP_FILENAME), filename_pdf)
 
