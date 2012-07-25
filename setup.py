@@ -38,6 +38,7 @@ setup(name='slc.docconv',
           # -*- Extra requirements: -*-
           'collective.documentviewer',
           'five.grok',
+          'beautifulsoup4',
       ],
       extras_require={'test': ['plone.app.testing']},
       entry_points="""
