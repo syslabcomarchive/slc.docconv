@@ -1,7 +1,7 @@
 import shutil
 from bs4 import BeautifulSoup
 from five import grok
-from os import path, listdir, walk, remove
+from os import path, walk, remove
 from zipfile import ZipFile
 from tempfile import TemporaryFile
 from Products.CMFPlone.interfaces import IPloneSiteRoot
@@ -20,8 +20,10 @@ class ConvertExternal(grok.View):
     def render(self):
         filedata = self.request.get('filedata')
         if not filedata:
+            self.request.RESPONSE.setStatus(415)
             return 'No filedata found'
         if not docsplit:
+            self.request.RESPONSE.setStatus(500)
             return 'docsplit not found, check that docsplit is installed'
 
         fzipfilelist = []
@@ -46,6 +48,7 @@ class ConvertExternal(grok.View):
             fzipfilelist = fzip.filelist
             html = [x.filename for x in fzipfilelist if x.filename.endswith('.html') or x.filename.endswith('.htm')]
             if not html:
+                self.request.RESPONSE.setStatus(415)
                 return 'No html file found in zip'
             fzip.extractall(self.gsettings.storage_location)
             shutil.move(path.join(self.gsettings.storage_location, html[0]), filename_dump)
