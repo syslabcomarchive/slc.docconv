@@ -1,6 +1,7 @@
 import shutil
 from bs4 import BeautifulSoup
 from five import grok
+from io import BytesIO
 from os import path, walk, remove
 from zipfile import ZipFile
 from tempfile import TemporaryFile
@@ -27,13 +28,17 @@ class ConvertExternal(grok.View):
             return 'docsplit not found, check that docsplit is installed'
 
         fzipfilelist = []
-        filename_base = '.'.join(filedata.filename.decode('utf8').split('.')[:-1])
+        filename_base = filedata.filename.decode('utf8')
+        if '.' in filename_base:
+            filename_base = '.'.join(filename_base.split('.')[:-1])
         storage_dir = path.join(self.gsettings.storage_location, filename_base)
         if filedata.headers.get('content-type') == 'application/octetstream':
             filename_dump = path.join(self.gsettings.storage_location, '.'.join((filename_base, 'html')))
         else:
             filename_dump = path.join(self.gsettings.storage_location, filedata.filename.decode('utf8'))
-        filename_pdf = path.join(storage_dir, 'coverted.pdf') #'.'.join((filename_base, 'pdf')))
+            if filename_dump.endswith(filename_base):
+                filename_dump = '.'.join([filename_dump, 'dat'])
+        filename_pdf = path.join(storage_dir, 'converted.pdf') #'.'.join((filename_base, 'pdf')))
 
         if not path.exists(storage_dir):
             mkdir_p(storage_dir)
@@ -42,9 +47,8 @@ class ConvertExternal(grok.View):
         # do we have a zip file?
         if filedata.headers.get('content-type') == 'application/octetstream':
             # extract it
-            ff = TemporaryFile()
-            ff.write(filedata.read())
-            fzip = ZipFile(ff)
+            stream = BytesIO(filedata.read())
+            fzip = ZipFile(stream)
             fzipfilelist = fzip.filelist
             html = [x.filename for x in fzipfilelist if x.filename.endswith('.html') or x.filename.endswith('.htm')]
             if not html:
@@ -53,7 +57,7 @@ class ConvertExternal(grok.View):
             fzip.extractall(self.gsettings.storage_location)
             shutil.move(path.join(self.gsettings.storage_location, html[0]), filename_dump)
             fzip.close()
-            ff.close()
+            stream.close()
 
             # make img src paths absolute
             htmlfile = open(filename_dump, 'r')
@@ -70,7 +74,6 @@ class ConvertExternal(grok.View):
             fi.write(filedata.read())
             fi.close()
 
-        #if filedata.filename.decode('utf8').lower().endswith('pdf'):
         if 'pdf' in filedata.headers.get('content-type'):
             shutil.move(filename_dump, filename_pdf)
         else:
@@ -88,10 +91,10 @@ class ConvertExternal(grok.View):
                 converttopdf=False,
                 filename=filedata.filename.decode('utf8'),
                 inputfilepath=filename_pdf)
-        num_pages = docsplit.convert(storage_dir, **args)
+        docsplit.convert(storage_dir, **args)
 
-        filename_zip = path.join(self.gsettings.storage_location, '.'.join((filename_base, 'zip')))
-        zipped = ZipFile(filename_zip, 'w')
+        stream = BytesIO()
+        zipped = ZipFile(stream, 'w')
         for entry in walk(storage_dir):
             relpath = path.relpath(entry[0], storage_dir)
             if not entry[0] == storage_dir:
@@ -102,10 +105,8 @@ class ConvertExternal(grok.View):
                 relative = path.join(relpath, filename)
                 zipped.write(path.join(entry[0], filename), relative)
         zipped.close()
-        zipfd = open(filename_zip, 'r')
-        zipdata = zipfd.read()
-        zipfd.close()
-        remove(filename_zip)
+        zipdata = stream.getvalue()
+        stream.close()
         shutil.rmtree(storage_dir)
         for ff in fzipfilelist:
             if not ff.filename == html[0]: # this one has already been consumed by convert_to_pdf
