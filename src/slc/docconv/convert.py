@@ -4,7 +4,6 @@ from five import grok
 from io import BytesIO
 from os import path, walk, remove
 from zipfile import ZipFile
-from tempfile import TemporaryFile
 from Products.CMFPlone.interfaces import IPloneSiteRoot
 from collective.documentviewer.settings import GlobalSettings
 from collective.documentviewer.convert import docsplit, DUMP_FILENAME
@@ -79,7 +78,7 @@ class ConvertExternal(grok.View):
         else:
             if path.exists(path.join(storage_dir, DUMP_FILENAME)):
                 remove(path.join(storage_dir, DUMP_FILENAME))
-            docsplit.convert_to_pdf(filename_dump, filedata.filename.decode('utf8'), storage_dir)
+            docsplit.convert_to_pdf(filename_dump, filename_dump, storage_dir)
             shutil.move(path.join(storage_dir, DUMP_FILENAME), filename_pdf)
 
         args = dict(sizes=(('large', self.gsettings.large_size),
