@@ -63,6 +63,8 @@ class ConvertExternal(grok.View):
             soup = BeautifulSoup(htmlfile.read())
             htmlfile.close()
             for img in soup.find_all('img'):
+                if not img.has_key('src'):
+                    continue
                 img['src'] = path.join(self.gsettings.storage_location, img['src'])
             htmlfile = open(filename_dump, 'w')
             htmlfile.write(str(soup))
