@@ -1,8 +1,8 @@
 Changelog
 =========
 
-0.1-dev (unreleased)
---------------------
+1.0a1 (2012-08-31)
+------------------
 
-- Package created using templer
-  [Syslab.com GmbH]
+- initial release
+  [reinhardt]
