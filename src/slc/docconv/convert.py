@@ -8,6 +8,9 @@ from Products.CMFPlone.interfaces import IPloneSiteRoot
 from collective.documentviewer.settings import GlobalSettings
 from collective.documentviewer.convert import docsplit, DUMP_FILENAME
 from collective.documentviewer.utils import mkdir_p
+from logging import getLogger
+
+log = getLogger(__name__)
 
 class ConvertExternal(grok.View):
     grok.name('convert-external')
@@ -21,10 +24,14 @@ class ConvertExternal(grok.View):
         filedata = self.request.get('filedata')
         if not filedata:
             self.request.RESPONSE.setStatus(415)
-            return 'No filedata found'
+            msg = 'No filedata found'
+            log.warn(msg)
+            return msg
         if not docsplit:
             self.request.RESPONSE.setStatus(500)
-            return 'docsplit not found, check that docsplit is installed'
+            msg = 'docsplit not found, check that docsplit is installed'
+            log.error(msg)
+            return msg
 
         fzipfilelist = []
         filename_base = filedata.filename.decode('utf8')
@@ -52,7 +59,9 @@ class ConvertExternal(grok.View):
             html = [x.filename for x in fzipfilelist if x.filename.endswith('.html') or x.filename.endswith('.htm')]
             if not html:
                 self.request.RESPONSE.setStatus(415)
-                return 'No html file found in zip'
+                msg = 'No html file found in zip'
+                log.warn(msg)
+                return msg
             fzip.extractall(self.gsettings.storage_location)
             shutil.move(path.join(self.gsettings.storage_location, html[0]), filename_dump)
             fzip.close()
