@@ -1,3 +1,4 @@
+import os
 import shutil
 from bs4 import BeautifulSoup
 from five import grok
@@ -6,7 +7,8 @@ from os import path, walk, remove
 from zipfile import ZipFile
 from Products.CMFPlone.interfaces import IPloneSiteRoot
 from collective.documentviewer.settings import GlobalSettings
-from collective.documentviewer.convert import docsplit, DUMP_FILENAME
+from collective.documentviewer.convert import DUMP_FILENAME
+from collective.documentviewer.convert import DocSplitSubProcess
 from collective.documentviewer.utils import mkdir_p
 from logging import getLogger
 
@@ -14,6 +16,42 @@ from logging import getLogger
 log = getLogger(__name__)
 
 grok.templatedir('templates')
+
+
+class DocconvDocSplitSubProcess(DocSplitSubProcess):
+    """Customised to limit the number of pages"""
+
+    def dump_images(self, filepath, output_dir, sizes, format, lang='eng'):
+        # docsplit images pdf.pdf --size 700x,300x,50x
+        # --format gif --output
+        cmd = [self.binary, "images", filepath,
+            '--language', lang,
+            '--size', ','.join([str(s[1]) + 'x' for s in sizes]),
+            '--format', format,
+            '--rolling',
+            '--output', output_dir]
+        if lang != 'eng':
+            # cf https://github.com/documentcloud/docsplit/issues/72
+            # the cleaning functions are only suited for english
+            cmd.append('--no-clean')
+
+        self._run_command(cmd)
+
+        # now, move images to correctly named folders
+        for name, size in sizes:
+            dest = os.path.join(output_dir, name)
+            if os.path.exists(dest):
+                shutil.rmtree(dest)
+
+            source = os.path.join(output_dir, '%ix' % size)
+            shutil.move(source, dest)
+
+
+try:
+    docsplit = DocconvDocSplitSubProcess()
+except IOError:
+    logger.exception("No docsplit installed. slc.docconv will not work.")
+    docsplit = None
 
 
 class ConvertExternal(grok.View):
