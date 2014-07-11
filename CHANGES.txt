@@ -4,7 +4,11 @@ Changelog
 1.0 (unreleased)
 ----------------
 
-- Nothing changed yet.
+- improved buildout [reinhardt]
+- added some logging [reinhardt]
+- added view to upload documents for conversion, refs #10398 [reinhardt]
+- limit number of images to 20 by default, refs #10398 [reinhardt]
+- new version of documentviewer [reinhardt]
 
 
 1.0a1 (2012-08-31)
