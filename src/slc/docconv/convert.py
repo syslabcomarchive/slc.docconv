@@ -51,7 +51,7 @@ class DocconvDocSplitSubProcess(DocSplitSubProcess):
 try:
     docsplit = DocconvDocSplitSubProcess()
 except IOError:
-    logger.exception("No docsplit installed. slc.docconv will not work.")
+    log.exception("No docsplit installed. slc.docconv will not work.")
     docsplit = None
 
 
