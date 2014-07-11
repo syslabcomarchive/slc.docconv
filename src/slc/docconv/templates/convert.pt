@@ -1,13 +1,19 @@
-<html>
-  <head>
-    <title>File Upload</title>
-  </head>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en"
+      xmlns:tal="http://xml.zope.org/namespaces/tal"
+      xmlns:metal="http://xml.zope.org/namespaces/metal"
+      xmlns:i18n="http://xml.zope.org/namespaces/i18n"
+      lang="en"
+      metal:use-macro="context/main_template/macros/master"
+      i18n:domain="staralliance.theme">
   <body>
-    <h3>File Upload</h3>
-    <form action="http://localhost:6310/docconv/@@convert-external" 
-          method="post" enctype="multipart/form-data">
-      <input type="file" name="filedata" size="40">
-      <button type="submit" name="submit" value="submit">Submit</button>
-    </form>
+    <metal:content fill-slot="content" >
+        <h3>File Upload</h3>
+        <form action="@@convert-external" 
+              tal:attributes="action string:${here/absolute_url}/@@convert-external"
+              method="POST" enctype="multipart/form-data">
+          <input type="file" name="filedata" size="40">
+          <button type="submit" name="submit" value="submit">Submit</button>
+        </form>
+    </metal:content>
   </body>
 </html>

@@ -10,7 +10,11 @@ from collective.documentviewer.convert import docsplit, DUMP_FILENAME
 from collective.documentviewer.utils import mkdir_p
 from logging import getLogger
 
+
 log = getLogger(__name__)
+
+grok.templatedir('templates')
+
 
 class ConvertExternal(grok.View):
     grok.name('convert-external')
@@ -127,3 +131,10 @@ class ConvertExternal(grok.View):
         R.setHeader('content-disposition', 'inline; filename="%s"' % '.'.join((filename_base, u'zip')).encode('utf8'))
         R.setHeader('content-length', str(len(zipdata)))
         return zipdata
+
+
+class ConvertUpload(grok.View):
+    grok.name('convert-upload')
+    grok.context(IPloneSiteRoot)
+    grok.require('slc.docconv.convert')
+    grok.template('convert')

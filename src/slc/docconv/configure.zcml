@@ -7,7 +7,13 @@
 
   <five:registerPackage package="." initialize=".initialize" />
 
+  <permission
+    id="slc.docconv.convert"
+    title="slc.docconv: Convert"
+    />
+
   <include package="five.grok" />
   <grok:grok package="." />
+
 
 </configure>
