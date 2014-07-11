@@ -21,7 +21,7 @@ grok.templatedir('templates')
 class DocconvDocSplitSubProcess(DocSplitSubProcess):
     """Customised to limit the number of pages"""
 
-    def dump_images(self, filepath, output_dir, sizes, format, lang='eng'):
+    def dump_images(self, filepath, output_dir, sizes, format, lang='eng', limit=20):
         # docsplit images pdf.pdf --size 700x,300x,50x
         # --format gif --output
         cmd = [self.binary, "images", filepath,
@@ -29,7 +29,8 @@ class DocconvDocSplitSubProcess(DocSplitSubProcess):
             '--size', ','.join([str(s[1]) + 'x' for s in sizes]),
             '--format', format,
             '--rolling',
-            '--output', output_dir]
+            '--output', output_dir,
+            '--pages', '1-%s' % limit]
         if lang != 'eng':
             # cf https://github.com/documentcloud/docsplit/issues/72
             # the cleaning functions are only suited for english
