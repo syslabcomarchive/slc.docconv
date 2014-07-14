@@ -25,16 +25,11 @@ class DocconvDocSplitSubProcess(DocSplitSubProcess):
         # docsplit images pdf.pdf --size 700x,300x,50x
         # --format gif --output
         cmd = [self.binary, "images", filepath,
-            '--language', lang,
             '--size', ','.join([str(s[1]) + 'x' for s in sizes]),
             '--format', format,
             '--rolling',
             '--output', output_dir,
             '--pages', '1-%s' % limit]
-        if lang != 'eng':
-            # cf https://github.com/documentcloud/docsplit/issues/72
-            # the cleaning functions are only suited for english
-            cmd.append('--no-clean')
 
         self._run_command(cmd)
 
