@@ -1,10 +1,10 @@
 Changelog
 =========
 
-1.0 (unreleased)
-----------------
+1.0a2-dv2 (2014-07-14)
+----------------------
 
-- Nothing changed yet.
+- alternative release using documentviewer 2.1b2 and docsplit 0.6.3 [reinhardt]
 
 
 1.0a1 (2012-08-31)
