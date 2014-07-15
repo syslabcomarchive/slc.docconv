@@ -24,6 +24,9 @@ class DocconvDocSplitSubProcess(DocSplitSubProcess):
     def dump_images(self, filepath, output_dir, sizes, format, lang='eng', limit=20):
         # docsplit images pdf.pdf --size 700x,300x,50x
         # --format gif --output
+        pages = self.get_num_pages(filepath)
+        if pages < limit:
+            limit = pages
         cmd = [self.binary, "images", filepath,
             '--language', lang,
             '--size', ','.join([str(s[1]) + 'x' for s in sizes]),
