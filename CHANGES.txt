@@ -1,7 +1,7 @@
 Changelog
 =========
 
-1.0a2-dv3 (unreleased)
+1.0a2-dv3 (2014-07-15)
 ----------------------
 
 - Nothing changed yet.
