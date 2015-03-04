@@ -4,8 +4,33 @@ from ZPublisher.HTTPRequest import FileUpload
 from cgi import FieldStorage
 from io import BytesIO
 from plone import api
+from slc.docconv.convert import _collect_data
 from slc.docconv.testing import SLC_DOCCONV_INTEGRATION_TESTING
 from zipfile import ZipFile
+
+
+class TestUtils(unittest.TestCase):
+
+    def test_collect_data(self):
+        storage_dir = os.path.join(os.path.dirname(__file__), 'storage_dir')
+        converted = _collect_data(storage_dir)
+
+        self.assertIn('pdfs', converted)
+        self.assertGreaterEqual(len(converted['pdfs']), 1)
+
+        self.assertIn('thumbnails', converted)
+        self.assertGreaterEqual(len(converted['thumbnails']), 1)
+
+        self.assertIn('previews', converted)
+        self.assertGreaterEqual(len(converted['previews']), 1)
+
+        msg = 'incorrect sorting'
+        thumb2 = open(os.path.join(storage_dir, 'small/dump_2.gif'), 'r')
+        self.assertEqual(converted['thumbnails'][1], thumb2.read(), msg=msg)
+        thumb2.close()
+        prev2 = open(os.path.join(storage_dir, 'large/dump_2.gif'), 'r')
+        self.assertEqual(converted['previews'][1], prev2.read(), msg=msg)
+        prev2.close()
 
 
 class TestConvert(unittest.TestCase):

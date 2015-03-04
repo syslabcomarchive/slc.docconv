@@ -138,7 +138,38 @@ def _build_zip(storage_dir):
     return zipdata
 
 
-def convert_filedata(filename, payload, content_type, gsettings=None):
+def _read_file(dirpath, filename):
+    infile = open(path.join(dirpath, filename), 'r')
+    filedata = infile.read()
+    infile.close()
+    return filedata
+
+
+def file_num_or_name(filename):
+    try:
+        return int(filename.split('.')[0].split('_')[-1])
+    except ValueError:
+        return filename
+
+
+def _collect_data(storage_dir):
+    converted = {
+        'pdfs': [],
+        'thumbnails': [],
+        'previews': [],
+    }
+    for (dirpath, dirnames, filenames) in walk(storage_dir):
+        for filename in sorted(filenames, key=file_num_or_name):
+            if filename.endswith('.pdf'):
+                converted['pdfs'].append(_read_file(dirpath, filename))
+            elif dirpath.endswith('small'):
+                converted['thumbnails'].append(_read_file(dirpath, filename))
+            elif dirpath.endswith('large'):
+                converted['previews'].append(_read_file(dirpath, filename))
+    return converted
+
+
+def convert_filedata(filename, payload, content_type, gsettings=None, process_output=_build_zip):
     if not docsplit:
         msg = 'docsplit not found, check that docsplit is installed'
         raise IOError(msg)
@@ -174,7 +205,7 @@ def convert_filedata(filename, payload, content_type, gsettings=None):
         inputfilepath=filename_pdf)
     docsplit.convert(storage_dir, **args)
 
-    zipdata = _build_zip(storage_dir)
+    output = process_output(storage_dir)
 
     # clean up
     shutil.rmtree(storage_dir)
@@ -184,7 +215,19 @@ def convert_filedata(filename, payload, content_type, gsettings=None):
         if not ff.filename == html[0]:
             remove(path.join(gsettings.storage_location, ff.filename))
 
+    return output
+
+
+def convert_to_zip(filename, payload, content_type, gsettings=None):
+    zipdata = convert_filedata(
+        filename, payload, content_type, gsettings=gsettings, process_output=_build_zip)
     return zipdata
+
+
+def convert_to_raw(filename, payload, content_type, gsettings=None):
+    rawdata = convert_filedata(
+        filename, payload, content_type, gsettings=gsettings, process_output=_collect_data)
+    return rawdata
 
 
 class ConvertExternal(grok.View):
@@ -207,7 +250,7 @@ class ConvertExternal(grok.View):
         payload = filedata.read()
         content_type = filedata.headers.get('content-type')
         try:
-            zipdata = convert_filedata(
+            zipdata = convert_to_zip(
                 filename_base, payload, content_type, gsettings=self.gsettings)
         except IOError as e:
             self.request.RESPONSE.setStatus(500)
