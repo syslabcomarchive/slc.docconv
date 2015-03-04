@@ -40,7 +40,12 @@ setup(name='slc.docconv',
           'five.grok',
           'beautifulsoup4',
       ],
-      extras_require={'test': ['plone.app.testing']},
+      extras_require={
+          'test': [
+              'plone.app.testing',
+              'plone.api',
+          ]
+      },
       entry_points="""
       # -*- Entry points: -*-
       [z3c.autoinclude.plugin]
