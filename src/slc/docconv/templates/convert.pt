@@ -6,7 +6,7 @@
       metal:use-macro="context/main_template/macros/master"
       i18n:domain="staralliance.theme">
   <body>
-    <metal:content fill-slot="content" >
+    <metal:content fill-slot="main" >
         <h3>File Upload</h3>
         <form action="@@convert-external" 
               tal:attributes="action string:${here/absolute_url}/@@convert-external"
