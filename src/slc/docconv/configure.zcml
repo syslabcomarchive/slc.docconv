@@ -2,6 +2,7 @@
     xmlns="http://namespaces.zope.org/zope"
     xmlns:five="http://namespaces.zope.org/five"
     xmlns:i18n="http://namespaces.zope.org/i18n"
+    xmlns:genericsetup="http://namespaces.zope.org/genericsetup"
 	xmlns:grok="http://namespaces.zope.org/grok"
     i18n_domain="slc.docconv">
 
@@ -15,5 +16,19 @@
   <include package="five.grok" />
   <grok:grok package="." />
 
+  <!-- Register the installation GenericSetup extension profile -->
+  <genericsetup:registerProfile
+      name="default"
+      title="slc.docconv"
+      directory="profiles/default"
+      description="Extension profile for slc.docconv."
+      provides="Products.GenericSetup.interfaces.EXTENSION"
+      />
+
+  <genericsetup:importStep
+      name="documentviewer-settings"
+      title="Set up documentviewer"
+      description=""
+      handler="slc.docconv.setuphandlers.documentviewer_settings" />
 
 </configure>
