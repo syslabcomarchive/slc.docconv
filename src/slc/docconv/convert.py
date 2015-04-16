@@ -32,6 +32,7 @@ def setlimits():
     else:
         soft = MAX_CPU
     resource.setrlimit(rsrc, (soft, hard))
+    logger.info("RLIMIT_CPU set to %s/%s" % (soft/hard))
 
 class DocconvDocSplitSubProcess(DocSplitSubProcess):
     """Customised to limit the number of pages"""
