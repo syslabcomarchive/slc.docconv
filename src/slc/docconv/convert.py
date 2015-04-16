@@ -1,5 +1,7 @@
 import os
+import resource
 import shutil
+import subprocess
 from bs4 import BeautifulSoup
 from five import grok
 from io import BytesIO
@@ -14,9 +16,23 @@ from collective.documentviewer.utils import mkdir_p
 from logging import getLogger
 
 
-log = getLogger(__name__)
+logger = log = getLogger(__name__)
 
 grok.templatedir('templates')
+
+MAX_CPU = 1800
+
+
+def setlimits():
+    """ Set the max CPU time allowed for a single converter process """
+    rsrc = resource.RLIMIT_CPU
+    # need to know current hard limit as we can't increase that
+    soft, hard = resource.getrlimit(rsrc)
+    if MAX_CPU > hard:
+        soft = hard
+    else:
+        soft = MAX_CPU
+    resource.setrlimit(rsrc, (soft, hard))
 
 
 class DocconvDocSplitSubProcess(DocSplitSubProcess):
@@ -29,12 +45,12 @@ class DocconvDocSplitSubProcess(DocSplitSubProcess):
         if pages < limit:
             limit = pages
         cmd = [self.binary, "images", filepath,
-            '--language', lang,
-            '--size', ','.join([str(s[1]) + 'x' for s in sizes]),
-            '--format', format,
-            '--rolling',
-            '--output', output_dir,
-            '--pages', '1-%s' % limit]
+               '--language', lang,
+               '--size', ','.join([str(s[1]) + 'x' for s in sizes]),
+               '--format', format,
+               '--rolling',
+               '--output', output_dir,
+               '--pages', '1-%s' % limit]
         if lang != 'eng':
             # cf https://github.com/documentcloud/docsplit/issues/72
             # the cleaning functions are only suited for english
@@ -50,6 +66,32 @@ class DocconvDocSplitSubProcess(DocSplitSubProcess):
 
             source = os.path.join(output_dir, '%ix' % size)
             shutil.move(source, dest)
+
+    def _run_command(self, cmd):
+        """ copied over from documentviewer to be able to set resource limits """
+        if isinstance(cmd, basestring):
+            cmd = cmd.split()
+        cmdformatted = ' '.join(cmd)
+        logger.info("Running command %s" % cmdformatted)
+        process = subprocess.Popen(cmd, stdout=subprocess.PIPE,
+                                   stderr=subprocess.PIPE,
+                                   close_fds=self.close_fds,
+                                   preexec_fn=setlimits)
+        output, error = process.communicate()
+        process.stdout.close()
+        process.stderr.close()
+        if process.returncode != 0:
+            error = """Command
+%s
+finished with return code
+%i
+and output:
+%s
+%s""" % (cmdformatted, process.returncode, output, error)
+            logger.info(error)
+            raise Exception(error)
+        logger.info("Finished Running Command %s" % cmdformatted)
+        return output
 
 
 try:
@@ -100,7 +142,7 @@ def _dump_zipfile(payload, filename_dump, gsettings):
     soup = BeautifulSoup(htmlfile.read())
     htmlfile.close()
     for img in soup.find_all('img'):
-        if not 'src' in img:
+        if 'src' not in img:
             continue
         img['src'] = path.join(gsettings.storage_location, img['src'])
     htmlfile = open(filename_dump, 'w')
