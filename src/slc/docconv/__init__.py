@@ -1,7 +1,6 @@
 # -*- extra stuff goes here -*-
 
 import permissions
-import patches
 
 # make permissions available for GenericSetup
 permissions
