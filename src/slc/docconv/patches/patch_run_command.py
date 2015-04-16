@@ -28,7 +28,7 @@ def _run_command(self, cmd):
     if isinstance(cmd, basestring):
         cmd = cmd.split()
     cmdformatted = ' '.join(cmd)
-    logger.info("Running command %s" % cmdformatted)
+    logger.info("Running rlimited command %s" % cmdformatted)
     process = subprocess.Popen(cmd, stdout=subprocess.PIPE,
                                stderr=subprocess.PIPE,
                                close_fds=self.close_fds,
@@ -49,6 +49,6 @@ and output:
     logger.info("Finished Running Command %s" % cmdformatted)
     return output
 
-
+logger.info("Patching _run_command to support RLIMIT")
 convert.setlimits = setlimits
 convert.BaseSubProcess._run_command = _run_command
