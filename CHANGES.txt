@@ -4,7 +4,9 @@ Changelog
 1.3 (unreleased)
 ----------------
 
-- Nothing changed yet.
+- Don't install collective.documentviewer. We use the code but we
+  don't want it installed because it overrides views for PDF files.
+  [deroiste]
 
 
 1.2 (2015-05-15)
