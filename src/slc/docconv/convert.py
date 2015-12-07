@@ -22,19 +22,21 @@ grok.templatedir('templates')
 class DocconvDocSplitSubProcess(DocSplitSubProcess):
     """Customised to limit the number of pages"""
 
-    def dump_images(self, filepath, output_dir, sizes, format, lang='eng', limit=20):
+    def dump_images(self, filepath, output_dir, sizes, format, lang='eng',
+                    limit=20):
         # docsplit images pdf.pdf --size 700x,300x,50x
         # --format gif --output
         pages = self.get_num_pages(filepath)
         if pages < limit:
             limit = pages
         cmd = [self.binary, "images", filepath,
-            '--language', lang,
-            '--size', ','.join([str(s[1]) + 'x' for s in sizes]),
-            '--format', format,
-            '--rolling',
-            '--output', output_dir,
-            '--pages', '1-%s' % limit]
+               '--language', lang,
+               '--size', ','.join([str(s[1]) + 'x' for s in sizes]),
+               '--format', format,
+               '--rolling',
+               '--density', '300',
+               '--output', output_dir,
+               '--pages', '1-%s' % limit]
         if lang != 'eng':
             # cf https://github.com/documentcloud/docsplit/issues/72
             # the cleaning functions are only suited for english
@@ -100,7 +102,7 @@ def _dump_zipfile(payload, filename_dump, gsettings):
     soup = BeautifulSoup(htmlfile.read())
     htmlfile.close()
     for img in soup.find_all('img'):
-        if not 'src' in img:
+        if 'src' not in img:
             continue
         img['src'] = path.join(gsettings.storage_location, img['src'])
     htmlfile = open(filename_dump, 'w')
@@ -169,7 +171,8 @@ def _collect_data(storage_dir):
     return converted
 
 
-def convert_filedata(filename, payload, content_type, gsettings=None, process_output=_build_zip):
+def convert_filedata(filename, payload, content_type, gsettings=None,
+                     process_output=_build_zip):
     if not docsplit:
         msg = 'docsplit not found, check that docsplit is installed'
         raise IOError(msg)
@@ -220,13 +223,15 @@ def convert_filedata(filename, payload, content_type, gsettings=None, process_ou
 
 def convert_to_zip(filename, payload, content_type, gsettings=None):
     zipdata = convert_filedata(
-        filename, payload, content_type, gsettings=gsettings, process_output=_build_zip)
+        filename, payload, content_type, gsettings=gsettings,
+        process_output=_build_zip)
     return zipdata
 
 
 def convert_to_raw(filename, payload, content_type, gsettings=None):
     rawdata = convert_filedata(
-        filename, payload, content_type, gsettings=gsettings, process_output=_collect_data)
+        filename, payload, content_type, gsettings=gsettings,
+        process_output=_collect_data)
     return rawdata
 
 
@@ -262,10 +267,11 @@ class ConvertExternal(grok.View):
             return str(e)
 
         response_filename = '.'.join((filename_base, u'zip')).encode('utf8')
-        R = self.request.RESPONSE
-        R.setHeader('content-type', 'application/zip')
-        R.setHeader('content-disposition', 'inline; filename="%s"' % response_filename)
-        R.setHeader('content-length', str(len(zipdata)))
+        r = self.request.RESPONSE
+        r.setHeader('content-type', 'application/zip')
+        r.setHeader('content-disposition', 'inline; filename="%s"'
+                    % response_filename)
+        r.setHeader('content-length', str(len(zipdata)))
         return zipdata
 
 
