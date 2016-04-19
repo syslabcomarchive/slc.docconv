@@ -39,11 +39,11 @@ setup(name='slc.docconv',
           'collective.documentviewer',
           'five.grok',
           'beautifulsoup4',
+          'plone.api',
       ],
       extras_require={
           'test': [
               'plone.app.testing',
-              'plone.api',
           ]
       },
       entry_points="""
