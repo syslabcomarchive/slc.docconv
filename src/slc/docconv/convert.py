@@ -47,8 +47,11 @@ class DocconvDocSplitSubProcess(DocSplitSubProcess):
             '--size', ','.join([str(s[1]) + 'x' for s in sizes]),
             '--format', format,
             '--rolling',
+	    '--density', '300',
             '--output', output_dir,
             '--pages', '1-%s' % limit]
+	logger.info("Command as run in slc.docconv")
+	logger.info(cmd)
 
         self._run_command(cmd)
 
